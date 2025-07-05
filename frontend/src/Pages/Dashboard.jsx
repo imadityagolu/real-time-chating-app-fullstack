@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import './dashboard.css';
+import { CiSearch } from "react-icons/ci";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { CiCamera } from "react-icons/ci";
 import { GrGallery } from "react-icons/gr";
@@ -619,9 +620,13 @@ const Dashboard = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '97vh' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '90vh', backgroundColor:'rgb(223, 221, 221)', padding:'15px' }}>
 
-      {/* Header */}
+      
+      <span style={{fontWeight:'bold', fontSize:'25px'}}>Chat</span>
+      <span style={{color:'rgb(73, 73, 73)', marginBottom:'20px'}}>Manage your chats</span>
+
+      {/* Header 
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -686,37 +691,45 @@ const Dashboard = () => {
           Logout
         </button>
       </div>
+      */}
       
       {/* Main content */}
-      <div style={{ display: 'flex', flex: 1, height:'70vh'  }}>
-
+      <div style={{ display: 'flex', flex: 1, height:'70vh', gap:'15px'  }}>
+      
       {/* Left panel: User list */}
-        <div style={{ width: '25%', borderRight: '1px solid #ccc', padding: '30', height:'99%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: '25%', 
+          borderRight: '1px solid #ccc', 
+          padding: '15px',
+          height: 'calc(100vh - 150px)',
+          display: 'flex', 
+          flexDirection: 'column',
+          backgroundColor:'white', 
+          borderRadius:'10px' }}>
+
           <div style={{ flexShrink: 0 }}>
-            <h3>Friends</h3>
+
+            <span style={{fontWeight:'bold', fontSize:'20px'}}>Chats</span>
             
             {/* Search Box */}
-            <div style={{ marginBottom: '15px', paddingLeft:'10px', paddingRight:'40px' }}>
+            <div style={{ marginBottom: '15px', padding:'0px 10px'}} className="chat-list-search-box" >
               <input
                 type="text"
-                placeholder="Search friends..."
+                placeholder="Search For Contacts or Messages"
+                className="chat-list-search-input"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  outline: 'none'
                 }}
               />
+              <CiSearch />
             </div>
             
-        {error && <div style={{ color: 'red' }}>{error}</div>}
+            {error && <div style={{ color: 'red' }}>{error}</div>}
+
           </div>
           
-          <ul style={{ listStyle: 'none', padding: 0, overflow: 'auto', flex: 1 }}>
+          <ul style={{ listStyle: 'none', padding: 0, overflowY: 'auto', flex: 1, marginTop:'-5px' }} className="chat-list-usersection">
           {getFilteredUsers()
             .sort((a, b) => {
               const aTimestamp = getLastMessageTimestamp(a._id);
@@ -726,14 +739,14 @@ const Dashboard = () => {
             .map((userItem) => (
             <li
               key={userItem._id}
+              className="chat-list-user"
               style={{
-                padding: 8,
+                padding: '12px 15px',
                 cursor: 'pointer',
                 background: selectedUser && selectedUser._id === userItem._id ? '#eee' : 'transparent',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                border:'1px solid black',
                 margin:'12px',
                 borderRadius: '5px'
               }}
@@ -748,6 +761,12 @@ const Dashboard = () => {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 {userItem.profilePicture ? (
+                  <>
+                  <div style={{ 
+                    borderRadius: '50%', 
+                    color: 'white',
+                    justifyContent: 'center',
+                  }}>
                   <img 
                     src={userItem.profilePicture} 
                     alt={userItem.username}
@@ -763,6 +782,13 @@ const Dashboard = () => {
                       e.target.nextSibling.style.display = 'flex';
                     }}
                   />
+                  
+                  {onlineUsers.includes(userItem._id) && (
+                    <span style={{ color: 'rgb(43, 216, 66)', marginLeft: -15, marginTop:'25px', fontSize: 20, position:'absolute' }}>●</span>
+                    )}
+
+                  </div>
+                  </>
                 ) : null}
                 <div 
                   style={{ 
@@ -780,15 +806,18 @@ const Dashboard = () => {
                   }}
                 >
                   {userItem.username.charAt(0).toUpperCase()}
+                  
+                  {onlineUsers.includes(userItem._id) && (
+                  <span style={{ color: 'rgb(43, 216, 66)', marginLeft: 25, fontSize: 21,  marginTop:'30px', position:'absolute'}}>●</span>
+                  )}
+
                 </div>
+
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <span style={{ fontWeight: 'bold' }}>
-                {userItem.username}
+                    {userItem.username}
                     </span>
-                {onlineUsers.includes(userItem._id) && (
-                  <span style={{ color: 'green', marginLeft: 8, fontSize: 12 }}>●</span>
-                )}
                   </div>
                   <span style={{ 
                     fontSize: '12px', 
@@ -822,7 +851,7 @@ const Dashboard = () => {
                   )}
                   {unreadCounts[userItem._id] > 0 && (
                     <span style={{
-                      backgroundColor: '#ff4757',
+                      backgroundColor: 'orange',
                       color: 'white',
                       borderRadius: '50%',
                       width: '20px',
@@ -842,23 +871,82 @@ const Dashboard = () => {
             </li>
           ))}
         </ul>
-      </div>
+        </div>
 
       {/* Right panel: Chat area */}
         <div style={{ 
-          width: '75%', 
-          padding: 16, 
+          width: '75%',
           display: 'flex', 
           flexDirection: 'column', 
           height: 'calc(100vh - 120px)',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          backgroundColor:'white',
+          borderRadius:'10px',
         }}>
 
         {selectedUser ? (
           <>
+            {/* header */}
+            <div style={{display:'flex', justifyContent:'space-between', borderBottom:'1px solid gray', padding: '2px 15px'}}> 
 
-                      <div style={{display:'flex', justifyContent:'space-between'}}> 
-              <h3>Chating with : {selectedUser.username}</h3>
+              <div style={{display:'flex', gap:'10px', alignItems:'center'}}>
+
+              {selectedUser.profilePicture ? (
+                  <>
+                <div style={{ 
+                    borderRadius: '50%', 
+                    color: 'white',
+                  }}>
+                  <img 
+                    src={selectedUser.profilePicture} 
+                    alt={selectedUser.username}
+                    style={{ 
+                      width: '40px', 
+                      height: '40px', 
+                      borderRadius: '50%', 
+                      objectFit: 'cover',
+                      border: '2px solid #ddd'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                </div>
+                </>
+              ) : (
+                <>
+                
+                <div 
+                  style={{ 
+                    width: '40px', 
+                    height: '40px', 
+                    borderRadius: '50%', 
+                    backgroundColor: '#007AFF',
+                    color: 'white',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    border: '2px solid #ddd',
+                    display: selectedUser.profilePicture ? 'none' : 'flex'
+                  }}
+                >
+                  
+                  {selectedUser.username.charAt(0).toUpperCase()}
+
+                </div>
+
+                </>
+              )}
+
+                    {onlineUsers.includes(selectedUser._id) && (
+                    <span style={{ color: 'rgb(43, 216, 66)', marginLeft: 30, marginTop:'25px', fontSize: 20, position:'absolute' }}>●</span>
+                    )}
+
+              <h3>{selectedUser.username}</h3>
+            </div>
+
               {isSelectionMode ? (
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '20px' }}>
                   <span style={{ fontSize: '14px', color: '#666' }}>
@@ -994,14 +1082,14 @@ const Dashboard = () => {
               )}
             </div>
 
+            {/* message box */}
             <div 
               ref={messageContainerRef}
               style={{ 
                 height: 'calc(100vh - 200px)', 
                 overflow: 'auto', 
-                border: '5px solid #ccc', 
                 marginBottom: 8, 
-                padding: 8, 
+                padding: 16, 
                 minHeight: '300px',
                 maxHeight: 'calc(100vh - 200px)'
               }}
@@ -1223,7 +1311,8 @@ const Dashboard = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            <div>
+            {/* text message box */}
+            <div style={{padding:16, borderTop:'1px solid gray'}}>
             <form onSubmit={handleSend} style={{ 
               display: 'flex', 
               marginTop: 'auto',
@@ -1438,10 +1527,10 @@ const Dashboard = () => {
 
           </>
         ) : (
-          <div>Select a user to start chatting</div>
+          <div style={{padding:60, textAlign:'center'}}>Select a user to start chatting</div>
         )}
 
-      </div>
+        </div>
 
       </div>
     </div>
