@@ -1,0 +1,25 @@
+input[type="file"] {
+    display: none;
+  }
+  
+  .custom-file-upload2 {
+    display: inline-block;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  input[type="file"] {
+    display: none;
+  }
+  
+  .custom-file-upload3 {
+    display: inline-block;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+  }

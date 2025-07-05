@@ -3,14 +3,18 @@ const app = express();
 require('dotenv/config');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
 const authRouter = require('./routers/auth');
 const userRouter = require('./routers/user');
 const messageRouter = require('./routers/message');
+const fileRouter = require('./routers/file');
 const http = require('http');
 const { Server } = require('socket.io');
 
 app.use(express.json());
 app.use(cors());
+app.use('/upload_dp', express.static(path.join(__dirname, '../frontend/public/upload_dp')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 mongoose.connect(process.env.MONGO_URL)
 .then(() => {console.log('Connected to MongoDB');} )
@@ -19,6 +23,7 @@ mongoose.connect(process.env.MONGO_URL)
 app.use('/api/auth', authRouter);
 app.use('/api', userRouter);
 app.use('/api', messageRouter);
+app.use('/api', fileRouter);
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -42,6 +47,9 @@ io.on('connection', (socket) => {
       io.to(sendToSocket).emit('msg-receive', {
         from: data.from,
         message: data.message,
+        fileUrl: data.fileUrl,
+        fileType: data.fileType,
+        fileName: data.fileName,
       });
     }
   });
