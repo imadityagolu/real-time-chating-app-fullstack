@@ -17,6 +17,7 @@ import { TbClearAll } from "react-icons/tb";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { MdBlockFlipped } from "react-icons/md";
 import EmojiPicker from 'emoji-picker-react';
+import { LuRefreshCcw, LuChevronUp, LuMic, LuSend } from "react-icons/lu";
 
 const SOCKET_URL = 'http://localhost:8080'; // Use your backend port
 
@@ -622,81 +623,26 @@ const Dashboard = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '90vh', backgroundColor:'rgb(223, 221, 221)', padding:'15px' }}>
 
-      
-      <span style={{fontWeight:'bold', fontSize:'25px'}}>Chat</span>
-      <span style={{color:'rgb(73, 73, 73)', marginBottom:'20px'}}>Manage your chats</span>
+      {/* header */}
+      <div style={{display:'flex', justifyContent:'space-between', marginBottom:'20px'}}>
 
-      {/* Header 
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        padding: '16px 24px', 
-        backgroundColor: '#f8f9fa', 
-        borderBottom: '1px solid #dee2e6',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          {user?.profilePicture ? (
-            <img 
-              src={user.profilePicture} 
-              alt={user?.username}
-              style={{ 
-                width: '50px', 
-                height: '50px', 
-                borderRadius: '50%', 
-                objectFit: 'cover',
-                border: '2px solid #ddd'
-              }}
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'flex';
-              }}
-            />
-          ) : null}
-          <div 
-            style={{ 
-              width: '50px', 
-              height: '50px', 
-              borderRadius: '50%', 
-              backgroundColor: '#007bff',
-              color: 'white',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '20px',
-              fontWeight: 'bold',
-              border: '2px solid #ddd',
-              display: user?.profilePicture ? 'none' : 'flex'
-            }}
-          >
-            {user?.username?.charAt(0).toUpperCase() || 'U'}
-          </div>
-          <h2 style={{ margin: 0, color: '#495057' }}>Welcome, {user?.username || 'User'}!</h2>
-        </div>
-        <button 
-          onClick={handleLogout}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#dc3545',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}
-          onMouseOver={(e) => e.target.style.backgroundColor = '#c82333'}
-          onMouseOut={(e) => e.target.style.backgroundColor = '#dc3545'}
-        >
-          Logout
-        </button>
+      <div>
+      <span style={{fontWeight:'bold', fontSize:'25px'}}>Chat</span>
+      <br/>
+      <span style={{color:'rgb(73, 73, 73)'}}>Manage your chats</span>
       </div>
-      */}
+
+      <div style={{display:'flex', gap:'10px', height:'35px'}}>
+        <div style={{backgroundColor:'white', color:'gray', padding:'5px 10px', display:'flex', alignItems:'center'}}><LuRefreshCcw /></div>
+        <div style={{backgroundColor:'white', color:'gray', padding:'5px 10px', display:'flex', alignItems:'center'}}><LuChevronUp /></div>
+      </div>
+
+      </div>
       
       {/* Main content */}
       <div style={{ display: 'flex', flex: 1, height:'70vh', gap:'15px'  }}>
       
-      {/* Left panel: User list */}
+        {/* Left panel: User list */}
         <div style={{ width: '25%', 
           borderRight: '1px solid #ccc', 
           padding: '15px',
@@ -873,7 +819,7 @@ const Dashboard = () => {
         </ul>
         </div>
 
-      {/* Right panel: Chat area */}
+        {/* Right panel: Chat area */}
         <div style={{ 
           width: '75%',
           display: 'flex', 
@@ -886,7 +832,7 @@ const Dashboard = () => {
 
         {selectedUser ? (
           <>
-            {/* header */}
+            {/* friend header */}
             <div style={{display:'flex', justifyContent:'space-between', borderBottom:'1px solid gray', padding: '2px 15px'}}> 
 
               <div style={{display:'flex', gap:'10px', alignItems:'center'}}>
@@ -986,14 +932,19 @@ const Dashboard = () => {
                   </button>
                 </div>
               ) : (
-                <span
-                  onClick={() => setClickDropdown(!clickDropdown)}
-                  style={{ color: "grey", position: "relative", marginTop:'20px' }}
-                >
-                  <HiOutlineDotsVertical className="threedot-setting" />
-                </span>
+                <>
+                <div style={{ color: "grey", position: "relative", marginTop:'20px', marginRight:'10px' }}>
+                <div style={{display:'flex', gap:'20px', fontSize:'20px'}}>
+                  <CiSearch />
+                  <span onClick={() => setClickDropdown(!clickDropdown)}>
+                    <HiOutlineDotsVertical className="threedot-setting" />
+                  </span>
+                </div>
+                </div>
+                </>
               )}
-                         {clickDropdown && (
+
+              {clickDropdown && (
                <div
                  className="settings-dropdown-container"
                  style={{
@@ -1209,7 +1160,7 @@ const Dashboard = () => {
                   <span
                     style={{
                       display: 'inline-block',
-                      background: msg.from === user.id ? '#aee1f9' : '#eee',
+                      background: msg.from === user.id ? 'rgb(225, 223, 223)' : 'rgb(225, 223, 223)',
                       padding: '6px 12px',
                       borderRadius: 12,
                         margin: '2px 0',
@@ -1312,25 +1263,31 @@ const Dashboard = () => {
             </div>
 
             {/* text message box */}
-            <div style={{padding:16, borderTop:'1px solid gray'}}>
+            <div style={{padding:'8px 16px', borderTop:'1px solid gray', backgroundColor:'white'}}>
+
             <form onSubmit={handleSend} style={{ 
               display: 'flex', 
               marginTop: 'auto',
               position: 'sticky',
               bottom: 0,
-              backgroundColor: 'white',
-              padding: '8px 0',
-              alignItems:'center'
+              backgroundColor: 'rgb(225, 223, 223)',
+              padding: '5px 15px',
+              alignItems:'center',
+              border:'1px solid gray',
+              borderRadius:'10px',
+              gap:'10px'
             }}>
+
+              <LuMic />
+              
               <input
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type a message..."
-                style={{ flex: 1, padding: 8 }}
+                placeholder="Type your message..."
+                style={{ flex: 1, padding: 8, border:'none', outline:'none', backgroundColor:'rgb(225, 223, 223)' }}
               />
               
-
               <GrEmoji 
                 style={{ fontSize: "20px", cursor: "pointer" }} 
                 onClick={toggleEmojiPicker}
@@ -1519,8 +1476,8 @@ const Dashboard = () => {
                 </div>
                 )}
 
-              <button type="submit" style={{ padding: '8px 16px' }}>
-                Send
+              <button type="submit" style={{ border:'none', backgroundColor:'orange', color:'white', display:'flex', justifyContent:'center', borderRadius:'8px', padding:'8px 10px' }}>
+                <LuSend />
               </button>
             </form>
             </div>
