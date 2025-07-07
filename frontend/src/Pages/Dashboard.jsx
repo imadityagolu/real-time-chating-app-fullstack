@@ -675,7 +675,7 @@ const Dashboard = () => {
 
           </div>
           
-          <ul style={{ listStyle: 'none', padding: 0, overflowY: 'auto', flex: 1, marginTop:'-5px' }} className="chat-list-usersection">
+          <ul style={{ listStyle: 'none', padding: 0, overflowY: 'auto', flex: 1, marginTop:'1px' }} className="chat-list-usersection">
           {getFilteredUsers()
             .sort((a, b) => {
               const aTimestamp = getLastMessageTimestamp(a._id);
@@ -734,7 +734,7 @@ const Dashboard = () => {
 
                   {onlineUsers.includes(userItem._id) ? (
                     <div style={{ marginTop: '-20px', marginLeft: '30px' }}>
-                      <span style={{ color: 'rgb(43, 216, 66)', fontSize: 21 }}>●</span>
+                      <span style={{ color: 'rgb(43, 216, 66)', fontSize: 21, }}>●</span>
                     </div>
                     ) : (
                     <div style={{ marginTop: '-20px', marginLeft: '30px' }}>
@@ -768,7 +768,7 @@ const Dashboard = () => {
 
                   {onlineUsers.includes(userItem._id) ? (
                     <div style={{ marginTop: '-20px', marginLeft: '30px' }}>
-                      <span style={{ color: 'rgb(43, 216, 66)', fontSize: 21 }}>●</span>
+                      <span style={{ color: 'rgb(43, 216, 66)', fontSize: 21, }}>●</span>
                     </div>
                   ) : (
                     <div style={{ marginTop: '-20px', marginLeft: '30px' }}>
@@ -814,7 +814,7 @@ const Dashboard = () => {
                   {getLastMessageStatus(userItem._id) && (
                     <span style={{ 
                       fontSize: '10px', 
-                      color: getLastMessageStatus(userItem._id) === '✓✓' ? '#34b7f1' : '#999'
+                      color: getLastMessageStatus(userItem._id) === '✓✓' ? 'rgb(43, 216, 66)' : '#999'
                     }}>
                       {getLastMessageStatus(userItem._id)}
                     </span>
@@ -858,7 +858,7 @@ const Dashboard = () => {
         {selectedUser ? (
           <>
             {/* friend header */}
-            <div style={{display:'flex', justifyContent:'space-between', borderBottom:'1px solid rgb(231, 230, 230)', padding: '2px 15px'}}> 
+            <div style={{display:'flex', justifyContent:'space-between', borderBottom:'1px solid rgb(231, 230, 230)', padding: '10px 15px'}}> 
 
               <div style={{display:'flex', gap:'10px', alignItems:'center'}}>
 
@@ -915,7 +915,11 @@ const Dashboard = () => {
                     <span style={{ color: 'rgb(43, 216, 66)', marginLeft: 30, marginTop:'25px', fontSize: 20, position:'absolute' }}>●</span>
                     )}
 
-              <h3>{selectedUser.username}</h3>
+              <div>
+                <span><b>{selectedUser.username}</b></span>
+                <br/>
+                <span style={{color:'rgb(182, 180, 180)'}}>{onlineUsers.includes(selectedUser._id) ? 'online' : 'offline'}</span>
+              </div>
             </div>
 
               {isSelectionMode ? (
@@ -958,7 +962,7 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <>
-                <div style={{ color: "grey", position: "relative", marginTop:'20px', marginRight:'10px' }}>
+                <div style={{ color: "grey", position: "relative", marginTop:'15px', marginRight:'10px' }}>
                 <div style={{display:'flex', gap:'20px', fontSize:'20px'}}>
                   <CiSearch />
                   <span onClick={() => setClickDropdown(!clickDropdown)}>
@@ -1281,9 +1285,9 @@ const Dashboard = () => {
                         {msg.timestamp ? formatTime(msg.timestamp) : ''}
                       </span>
                       {msg.from === user.id && (
-                        <span style={{ fontSize: 10, color: '#666' }}>
+                        <span style={{ fontSize: 10, color:msg.read ? 'rgb(43, 216, 66)' : '#999' }}>
                           {msg.read ? '✓✓' : '✓'}
-                    </span>
+                        </span>
                   )}
                     </div>
                   </div>
@@ -1510,7 +1514,7 @@ const Dashboard = () => {
                 </div>
                 )}
 
-              <button type="submit" style={{ border:'none', backgroundColor:'orange', color:'white', display:'flex', justifyContent:'center', borderRadius:'8px', padding:'8px 10px' }}>
+              <button type="submit" style={{ border:'none', backgroundColor:'#007AFF', color:'white', display:'flex', justifyContent:'center', borderRadius:'8px', padding:'8px 10px' }}>
                 <LuSend />
               </button>
             </form>
