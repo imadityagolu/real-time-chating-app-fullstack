@@ -14,7 +14,13 @@ const MessageSchema = new mongoose.Schema({
     read: { type: Boolean, default: false },
     fileUrl: { type: String },
     fileType: { type: String },
-    fileName: { type: String }
+    fileName: { type: String },
+    replyTo: {
+      message: { type: String },
+      timestamp: { type: Date },
+      from: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      username: { type: String }
+    }
   }],
   lastMessage: {
     from: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

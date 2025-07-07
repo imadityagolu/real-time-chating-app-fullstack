@@ -2,7 +2,7 @@ const Message = require('../models/Message');
 
 exports.saveMessage = async (req, res) => {
   try {
-    const { from, to, message } = req.body;
+    const { from, to, message, replyTo } = req.body;
     
     // Sort participants to ensure consistent ordering
     const participants = [from, to].sort();
@@ -24,7 +24,8 @@ exports.saveMessage = async (req, res) => {
       from,
       message,
       timestamp: new Date(),
-      read: false
+      read: false,
+      ...(replyTo ? { replyTo } : {})
     };
     
     conversation.messages.push(newMessage);
