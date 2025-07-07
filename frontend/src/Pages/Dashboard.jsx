@@ -633,7 +633,7 @@ const Dashboard = () => {
       </div>
 
       <div style={{display:'flex', gap:'10px', height:'35px'}}>
-        <button style={{backgroundColor:'white', color:'gray', padding:'5px 10px', display:'flex', alignItems:'center', border:'none'}} onClick={() => location.reload()}><LuRefreshCcw /></button>
+        <button style={{backgroundColor:'white', color:'gray', padding:'5px 10px', display:'flex', alignItems:'center', border:'none', cursor:'pointer'}} onClick={() => location.reload()}><LuRefreshCcw /></button>
         <button style={{backgroundColor:'white', color:'gray', padding:'5px 10px', display:'flex', alignItems:'center', border:'none'}}><LuChevronUp /></button>
       </div>
 
