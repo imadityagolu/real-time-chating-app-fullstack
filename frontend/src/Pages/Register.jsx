@@ -87,7 +87,6 @@ const Register = () => {
           <input 
             type="file" 
             accept="image/*" 
-            required
             onChange={handleFileChange}
           />
           </div>

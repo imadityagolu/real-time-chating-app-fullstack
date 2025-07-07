@@ -621,7 +621,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '90vh', backgroundColor:'rgb(223, 221, 221)', padding:'15px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '94vh', backgroundColor:'rgb(231, 230, 230)', padding:'15px' }}>
 
       {/* header */}
       <div style={{display:'flex', justifyContent:'space-between', marginBottom:'20px'}}>
@@ -633,8 +633,8 @@ const Dashboard = () => {
       </div>
 
       <div style={{display:'flex', gap:'10px', height:'35px'}}>
-        <div style={{backgroundColor:'white', color:'gray', padding:'5px 10px', display:'flex', alignItems:'center'}}><LuRefreshCcw /></div>
-        <div style={{backgroundColor:'white', color:'gray', padding:'5px 10px', display:'flex', alignItems:'center'}}><LuChevronUp /></div>
+        <button style={{backgroundColor:'white', color:'gray', padding:'5px 10px', display:'flex', alignItems:'center', border:'none'}} onClick={() => location.reload()}><LuRefreshCcw /></button>
+        <button style={{backgroundColor:'white', color:'gray', padding:'5px 10px', display:'flex', alignItems:'center', border:'none'}}><LuChevronUp /></button>
       </div>
 
       </div>
@@ -708,6 +708,7 @@ const Dashboard = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 {userItem.profilePicture ? (
                   <>
+                  <div>
                   <div style={{ 
                     borderRadius: '50%', 
                     color: 'white',
@@ -729,13 +730,23 @@ const Dashboard = () => {
                     }}
                   />
                   
-                  {onlineUsers.includes(userItem._id) && (
-                    <span style={{ color: 'rgb(43, 216, 66)', marginLeft: -15, marginTop:'25px', fontSize: 20, position:'absolute' }}>●</span>
+                  </div>
+
+                  {onlineUsers.includes(userItem._id) ? (
+                    <div style={{ marginTop: '-20px', marginLeft: '30px' }}>
+                      <span style={{ color: 'rgb(43, 216, 66)', fontSize: 21 }}>●</span>
+                    </div>
+                    ) : (
+                    <div style={{ marginTop: '-20px', marginLeft: '30px' }}>
+                      <span style={{ color: 'gray', fontSize: 1 }}>●</span>
+                    </div>
                     )}
 
                   </div>
                   </>
-                ) : null}
+                ) : (
+                  <>
+                  <div>
                 <div 
                   style={{ 
                     width: '40px', 
@@ -752,12 +763,24 @@ const Dashboard = () => {
                   }}
                 >
                   {userItem.username.charAt(0).toUpperCase()}
-                  
-                  {onlineUsers.includes(userItem._id) && (
-                  <span style={{ color: 'rgb(43, 216, 66)', marginLeft: 25, fontSize: 21,  marginTop:'30px', position:'absolute'}}>●</span>
+
+                </div>
+
+                  {onlineUsers.includes(userItem._id) ? (
+                    <div style={{ marginTop: '-20px', marginLeft: '30px' }}>
+                      <span style={{ color: 'rgb(43, 216, 66)', fontSize: 21 }}>●</span>
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: '-20px', marginLeft: '30px' }}>
+                      <span style={{ color: 'gray', fontSize: 1 }}>●</span>
+                    </div>
                   )}
 
                 </div>
+                  </>
+                )}
+
+                
 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -778,6 +801,7 @@ const Dashboard = () => {
                   </span>
                 </div>
               </div>
+
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                 <span style={{ 
                   fontSize: '10px', 
@@ -814,6 +838,7 @@ const Dashboard = () => {
               )}
                 </div>
               </div>
+
             </li>
           ))}
         </ul>
@@ -833,12 +858,12 @@ const Dashboard = () => {
         {selectedUser ? (
           <>
             {/* friend header */}
-            <div style={{display:'flex', justifyContent:'space-between', borderBottom:'1px solid gray', padding: '2px 15px'}}> 
+            <div style={{display:'flex', justifyContent:'space-between', borderBottom:'1px solid rgb(231, 230, 230)', padding: '2px 15px'}}> 
 
               <div style={{display:'flex', gap:'10px', alignItems:'center'}}>
 
               {selectedUser.profilePicture ? (
-                  <>
+              <>
                 <div style={{ 
                     borderRadius: '50%', 
                     color: 'white',
@@ -949,7 +974,7 @@ const Dashboard = () => {
                  className="settings-dropdown-container"
                  style={{
                    position: "absolute",
-                   top: "120px",
+                   top: "140px",
                    right: "50px",
                    zIndex: "100",
                  }}
@@ -960,23 +985,25 @@ const Dashboard = () => {
                   style={{
                   backgroundColor: "white",
                   width: "200px",
-                  height: "210px",
+                  height: "165px",
                   border: "1px solid #dfd8d8",
                   padding:"10px 15px",
                   display:"flex",
                   flexDirection:"column",
-                  gap:"17px"
+                  borderRadius:'10px'
                   }}
                 >
                 <div style={{display:"flex", gap:"10px", alignItems:"center"}}>
                   <IoVolumeMuteOutline  style={{color:"#4a4848"}}/>
                   <span style={{color:"#4a4848"}}>Mute Notification</span>
                 </div>
+                <br/>
                 <div style={{display:"flex", gap:"10px", alignItems:"center"}}>
                   <GoClock style={{color:"#4a4848"}}/>
                   <span style={{color:"#4a4848"}}>Disappearing</span>
                 </div>
-                                 <div 
+                <br/>
+                <div 
                    style={{display:"flex", gap:"10px", alignItems:"center", cursor:"pointer"}}
                    onClick={async () => {
                      if (window.confirm('Are you sure you want to clear all messages in this conversation?')) {
@@ -1012,7 +1039,8 @@ const Dashboard = () => {
                    <TbClearAll  style={{color:"#4a4848"}}/>
                    <span style={{color:"#4a4848"}}>Clear Message</span>
                  </div>
-                                 <div 
+                 <br/>
+                  <div 
                    style={{display:"flex", gap:"10px", alignItems:"center", cursor:"pointer"}}
                    onClick={() => {
                      setIsSelectionMode(true);
@@ -1023,6 +1051,7 @@ const Dashboard = () => {
                    <RiDeleteBinLine  style={{color:"#4a4848"}}/>
                    <span style={{color:"#4a4848"}}>Delete Chat</span>
                  </div>
+                 <br/>
                 <div style={{display:"flex", gap:"10px", alignItems:"center"}}>
                   <MdBlockFlipped  style={{color:"#4a4848"}}/>
                   <span style={{color:"#4a4848"}}>Block</span>
@@ -1038,8 +1067,9 @@ const Dashboard = () => {
               ref={messageContainerRef}
               style={{ 
                 height: 'calc(100vh - 200px)', 
-                overflow: 'auto', 
-                marginBottom: 8, 
+                overflow: 'auto',
+                marginTop: 4,
+                marginBottom: 4, 
                 padding: 16, 
                 minHeight: '300px',
                 maxHeight: 'calc(100vh - 200px)'
@@ -1263,17 +1293,17 @@ const Dashboard = () => {
             </div>
 
             {/* text message box */}
-            <div style={{padding:'8px 16px', borderTop:'1px solid gray', backgroundColor:'white'}}>
+            <div style={{padding:'8px 16px', borderTop:'1px solid rgb(231, 230, 230)', backgroundColor:'white'}}>
 
             <form onSubmit={handleSend} style={{ 
               display: 'flex', 
               marginTop: 'auto',
               position: 'sticky',
               bottom: 0,
-              backgroundColor: 'rgb(225, 223, 223)',
+              backgroundColor: 'rgb(238, 237, 237)',
               padding: '5px 15px',
               alignItems:'center',
-              border:'1px solid gray',
+              border:'1px solid rgb(212, 212, 212)',
               borderRadius:'10px',
               gap:'10px'
             }}>
@@ -1285,11 +1315,11 @@ const Dashboard = () => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Type your message..."
-                style={{ flex: 1, padding: 8, border:'none', outline:'none', backgroundColor:'rgb(225, 223, 223)' }}
+                style={{ flex: 1, padding: 8, border:'none', outline:'none', backgroundColor:'rgb(238, 237, 237)' }}
               />
               
               <GrEmoji 
-                style={{ fontSize: "20px", cursor: "pointer" }} 
+                style={{ fontSize: "20px", cursor: "pointer", color:'gray' }} 
                 onClick={toggleEmojiPicker}
               />
               {showEmojiPicker && (
@@ -1312,7 +1342,7 @@ const Dashboard = () => {
                 className="custom-file-upload1"
                 style={{ cursor: "pointer" }}
               >
-                <CiFolderOn style={{ fontSize: "20px" }} />
+                <CiFolderOn style={{ fontSize: "20px", color:'gray' }} />
               </label>
               <input 
                 id="file-upload1" 
@@ -1411,15 +1441,15 @@ const Dashboard = () => {
                   onClick={() => setClickDropdownTwo(!clickDropdowntwo)}
                   style={{ color: "grey", position: "relative" }}
                 >
-                  <HiOutlineDotsVertical style={{ fontSize: "20px" }} />
-                </span>
+                  <HiOutlineDotsVertical style={{ fontSize: "20px", color:'gray' }} />
+              </span>
                 {clickDropdowntwo && (
                   <div
                     className="file-dropdown-container"
                     style={{
                       position: "absolute",
-                      top: "-250px",
-                      right: "70px",
+                      top: "-183px",
+                      right: "55px",
                       zIndex: "100",
                     }}
                   >
@@ -1430,45 +1460,49 @@ const Dashboard = () => {
                       className="send-file-container"
                       style={{
                       backgroundColor: "white",
-                      width: "200px",
-                      height: "210px",
+                      width: "150px",
+                      height: "165px",
                       border: "1px solid #dfd8d8",
                       padding:"10px 15px",
                       display:"flex",
                       flexDirection:"column",
-                      gap:"17px"
+                      borderRadius:'10px'
                       }}
                     >
                     <div style={{display:"flex", gap:"10px", alignItems:"center"}}>
-                      <label for="file-upload2" className="custom-file-upload2">
-                        <CiCamera style={{color:"#4a4848"}}/> 
-                        <span style={{color:"#4a4848"}}>Camera</span>
+                      <label htmlFor="file-upload2" className="custom-file-upload2" style={{color:"gray"}}>
+                        <CiCamera /> 
+                        <span>Camera</span>
                       </label>
                       <input 
                         id="file-upload2" 
                         type="file" 
                         accept="image/*" 
-                        capture
+                        capture="environment"
                         style={{color:"#4a4848"}} 
                         onChange={handleFileSelect}
                       />
                     </div>
+                    <br/>
                     <div style={{display:"flex", gap:"10px", alignItems:"center"}}>
-                      <label for="file-upload3" className="custom-file-upload3"><GrGallery style={{color:"#4a4848"}}/> Gallery</label>
+                      <label for="file-upload3" className="custom-file-upload3" style={{color:"gray"}}><GrGallery /> Gallery</label>
                       <input id="file-upload3" type="file" accept=".jpg,.jpeg,.pdf" style={{color:"#4a4848"}} 
                         onChange={handleFileSelect} />
                     </div>
-                    <div style={{display:"flex", gap:"10px", alignItems:"center"}}>
-                      <MdOutlineAudiotrack  style={{color:"#4a4848"}}/>
-                      <span style={{color:"#4a4848"}}>Audio</span>
+                    <br/>
+                    <div style={{display:"flex", gap:"10px", alignItems:"center", color:"gray"}}>
+                      <MdOutlineAudiotrack />
+                      <span>Audio</span>
                     </div>
-                    <div style={{display:"flex", gap:"10px", alignItems:"center"}}>
-                      <VscLocation  style={{color:"#4a4848"}}/>
-                      <span style={{color:"#4a4848"}}>Location</span>
+                    <br/>
+                    <div style={{display:"flex", gap:"10px", alignItems:"center", color:'gray'}}>
+                      <VscLocation />
+                      <span>Location</span>
                     </div>
-                    <div style={{display:"flex", gap:"10px", alignItems:"center"}}>
-                      <RiUserFollowLine  style={{color:"#4a4848"}}/>
-                      <span style={{color:"#4a4848"}}>Contact</span>
+                    <br/>
+                    <div style={{display:"flex", gap:"10px", alignItems:"center", color:'gray'}}>
+                      <RiUserFollowLine/>
+                      <span>Contact</span>
                     </div>
 
                     </div>
@@ -1484,12 +1518,39 @@ const Dashboard = () => {
 
           </>
         ) : (
-          <div style={{padding:60, textAlign:'center'}}>Select a user to start chatting</div>
+          <div style={{padding:60, textAlign:'center'}}>
+
+             <h2 style={{ margin: 0, color: '#495057' }}>Welcome, {user?.username || 'User'} !</h2>
+             
+             Select a user to start chatting
+            
+            <br/><br/>
+
+            <button 
+            onClick={handleLogout}
+            style={{
+            padding: '8px 16px',
+            backgroundColor: '#dc3545',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '500'
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#c82333'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#dc3545'}
+            >
+              Logout
+            </button>
+
+          </div>
         )}
 
         </div>
 
       </div>
+
     </div>
   );
 };

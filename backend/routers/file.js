@@ -34,8 +34,8 @@ const diskStorage = multer.diskStorage({
 
 // File filter function
 const fileFilter = (req, file, cb) => {
-  // Check file size (10MB limit)
-  if (file.size > 10 * 1024 * 1024) {
+  // Check file size (1MB limit)
+  if (file.size > 1 * 1024 * 1024) {
     return cb(new Error('File size must be less than 10MB'), false);
   }
 
@@ -57,7 +57,7 @@ const upload = multer({
   storage: memoryStorage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
+    fileSize: 1 * 1024 * 1024 // 1MB limit
   }
 });
 
@@ -65,7 +65,7 @@ const uploadLocal = multer({
   storage: diskStorage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
+    fileSize: 1 * 1024 * 1024 // 1MB limit
   }
 });
 
