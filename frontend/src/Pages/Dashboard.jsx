@@ -1228,6 +1228,16 @@ const Dashboard = () => {
                   }}
                   onClick={() => handleMessageSelection(idx)}
                 >
+                  {/* Checkbox for selection mode */}
+                  {isSelectionMode && msg.from === user.id && (
+                    <input
+                      type="checkbox"
+                      checked={selectedMessages.has(idx)}
+                      onChange={() => handleMessageSelection(idx)}
+                      style={{ position: 'absolute', top: 0, right: -30, zIndex: 2 }}
+                      onClick={e => e.stopPropagation()}
+                    />
+                  )}
                   {/* Reply preview above message row */}
                   {msg.replyTo && (
                     <div style={{
