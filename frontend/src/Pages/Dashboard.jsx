@@ -19,7 +19,7 @@ import { MdBlockFlipped } from "react-icons/md";
 import EmojiPicker from 'emoji-picker-react';
 import { LuRefreshCcw, LuChevronUp, LuMic, LuSend } from "react-icons/lu";
 
-const SOCKET_URL = 'http://localhost:8080'; // Use your backend port
+const SOCKET_URL = import.meta.env.BACKEND_URL || 'http://localhost:8080'; // Use your backend port
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
@@ -44,11 +44,12 @@ const Dashboard = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState(new Set());
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [contextMenu, setContextMenu] = useState(null); // { idx, x, y }
   const [replyTo, setReplyTo] = useState(null); // message object
+  const [popup, setPopup] = useState({ show: false, message: '' });
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -67,118 +68,145 @@ const Dashboard = () => {
   };
 
   const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Check file size (10MB = 10 * 1024 * 1024 bytes)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      alert('File size must be less than 10MB');
-      return;
-    }
-
-    // Check file type
+    const files = Array.from(event.target.files);
+    // Check file size and type for each file
+    const maxSize = 1 * 1024 * 1024; // 1MB
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'application/pdf'];
-    if (!allowedTypes.includes(file.type)) {
-      alert('Only images (JPEG, PNG, GIF, WebP), videos (MP4, AVI, MOV, WMV), and PDF files are allowed');
-      return;
-    }
-
-    setSelectedFile(file);
-    setShowEmojiPicker(false); // Close emoji picker when file is selected
+    const validFiles = files.filter(file => {
+      if (file.size > maxSize) {
+        setPopup({ show: true, message: `${file.name}: File size must be less than 1MB` });
+        return false;
+      }
+      if (!allowedTypes.includes(file.type)) {
+        setPopup({ show: true, message: `${file.name}: Invalid file type.` });
+        return false;
+      }
+      return true;
+    });
+    setSelectedFiles(validFiles);
+    setShowEmojiPicker(false);
   };
 
   const handleFileUpload = async () => {
-    if (!selectedFile || !selectedUser) return;
-
-    console.log('Starting file upload...', {
-      fileName: selectedFile.name,
-      fileType: selectedFile.type,
-      fileSize: selectedFile.size,
-      backendUrl: backendurl,
-      selectedUser: selectedUser._id
-    });
-
+    if (!selectedFiles.length || !selectedUser) return;
     setIsUploading(true);
     setUploadProgress(0);
-
-    try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('from', user.id);
-      formData.append('to', selectedUser._id);
-
-      const token = localStorage.getItem('token');
-      const uploadUrl = `${backendurl}/api/upload-file`;
-      console.log('Uploading to:', uploadUrl);
-
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
-
-      console.log('Upload response status:', response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Upload failed:', errorText);
-        throw new Error('Failed to upload file');
-      }
-
-      const data = await response.json();
-      console.log('Upload successful, response:', data);
-      
-      // Add the file message to the conversation
-      const fileMessage = {
-        from: user.id,
-        message: `📎 ${selectedFile.name}`,
-        fileUrl: data.fileUrl,
-        fileType: selectedFile.type,
-        fileName: selectedFile.name,
-        timestamp: new Date(),
-        read: false,
-        replyTo: null
-      };
-
-      console.log('Adding file message to chat:', fileMessage);
-
-      setMessages(prev => {
-        const newMessages = {
-          ...prev,
-          [selectedUser._id]: [...(prev[selectedUser._id] || []), fileMessage]
+    for (const file of selectedFiles) {
+      try {
+        // Try signed Cloudinary upload
+        const token = localStorage.getItem('token');
+        const sigRes = await fetch(`${backendurl}/api/cloudinary-signature`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const { timestamp, signature, apiKey, cloudName, folder } = await sigRes.json();
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('api_key', apiKey);
+        formData.append('timestamp', timestamp);
+        formData.append('signature', signature);
+        formData.append('folder', folder);
+        for (let pair of formData.entries()) {
+          console.log('Cloudinary upload param:', pair[0], '=', pair[1]);
+        }
+        const uploadRes = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+          { method: 'POST', body: formData }
+        );
+        const data = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(data.error?.message || 'Failed to upload file');
+        // Success: use Cloudinary URL
+        const fileMessage = {
+          from: user.id,
+          to: selectedUser._id,
+          message: `📎 ${file.name}`,
+          fileUrl: data.secure_url,
+          fileType: file.type,
+          fileName: file.name,
+          timestamp: new Date(),
+          read: false,
+          replyTo: null
         };
-        console.log('Updated messages:', newMessages);
-        return newMessages;
-      });
-
-      // Emit socket event for real-time delivery
-      socket.current.emit('send-msg', {
-        from: user.id,
-        to: selectedUser._id,
-        message: fileMessage.message,
-        fileUrl: fileMessage.fileUrl,
-        fileType: fileMessage.fileType,
-        fileName: fileMessage.fileName,
-        replyTo: fileMessage.replyTo
-      });
-
-      setSelectedFile(null);
-      setUploadProgress(0);
-      
-      // Scroll to bottom
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-
-    } catch (error) {
-      console.error('Upload error:', error);
-      alert('Failed to upload file. Please try again.');
-    } finally {
-      setIsUploading(false);
+        // Save file message to backend for persistence
+        await fetch(`${backendurl}/api/messages`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(fileMessage),
+        });
+        setMessages(prev => {
+          const newMessages = {
+            ...prev,
+            [selectedUser._id]: [...(prev[selectedUser._id] || []), fileMessage]
+          };
+          return newMessages;
+        });
+        socket.current.emit('send-msg', {
+          from: user.id,
+          to: selectedUser._id,
+          message: fileMessage.message,
+          fileUrl: fileMessage.fileUrl,
+          fileType: fileMessage.fileType,
+          fileName: fileMessage.fileName,
+          replyTo: fileMessage.replyTo
+        });
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      } catch (error) {
+        // Fallback: upload to backend for local storage
+        try {
+          const token = localStorage.getItem('token');
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('from', user.id);
+          formData.append('to', selectedUser._id);
+          const uploadUrl = `${backendurl}/api/upload-file`;
+          const response = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.message || 'Failed to upload file');
+          // Success: use local file URL
+          const fileMessage = {
+            from: user.id,
+            message: `📎 ${file.name}`,
+            fileUrl: data.fileUrl,
+            fileType: file.type,
+            fileName: file.name,
+            timestamp: new Date(),
+            read: false,
+            replyTo: null
+          };
+          setMessages(prev => {
+            const newMessages = {
+              ...prev,
+              [selectedUser._id]: [...(prev[selectedUser._id] || []), fileMessage]
+            };
+            return newMessages;
+          });
+          socket.current.emit('send-msg', {
+            from: user.id,
+            to: selectedUser._id,
+            message: fileMessage.message,
+            fileUrl: fileMessage.fileUrl,
+            fileType: fileMessage.fileType,
+            fileName: fileMessage.fileName,
+            replyTo: fileMessage.replyTo
+          });
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        } catch (fallbackError) {
+          setPopup({ show: true, message: 'Failed to upload file to both Cloudinary and local storage.' });
+        }
+      }
     }
+    setSelectedFiles([]);
+    setIsUploading(false);
   };
 
   const formatFileSize = (bytes) => {
@@ -225,52 +253,57 @@ const Dashboard = () => {
   };
 
   const getLastMessage = (userId) => {
-    const userMessages = messages[userId] || [];
+    const safeMessages = messages || {};
+    const userMessages = safeMessages[userId] || [];
     if (userMessages.length === 0) return 'No conversation';
     
     const lastMessage = userMessages[userMessages.length - 1];
     const isFromCurrentUser = lastMessage.from === user.id;
     const prefix = isFromCurrentUser ? 'You: ' : '';
-    const messageText = lastMessage.message.length > 20 
+    const messageText = lastMessage.message && lastMessage.message.length > 20 
       ? lastMessage.message.substring(0, 20) + '...' 
-      : lastMessage.message;
+      : lastMessage.message || '';
     
     return prefix + messageText;
   };
 
   const getLastMessageTime = (userId) => {
-    const userMessages = messages[userId] || [];
+    const safeMessages = messages || {};
+    const userMessages = safeMessages[userId] || [];
     if (userMessages.length === 0) return '';
     
     const lastMessage = userMessages[userMessages.length - 1];
-    return lastMessage.timestamp ? formatTime(lastMessage.timestamp) : '';
+    return lastMessage && lastMessage.timestamp ? formatTime(lastMessage.timestamp) : '';
   };
 
   const getLastMessageTimestamp = (userId) => {
-    const userMessages = messages[userId] || [];
+    const safeMessages = messages || {};
+    const userMessages = safeMessages[userId] || [];
     if (userMessages.length === 0) return new Date(0); // Very old date for sorting
     
     const lastMessage = userMessages[userMessages.length - 1];
-    return lastMessage.timestamp ? new Date(lastMessage.timestamp) : new Date(0);
+    return lastMessage && lastMessage.timestamp ? new Date(lastMessage.timestamp) : new Date(0);
   };
 
   const getLastMessageStatus = (userId) => {
-    const userMessages = messages[userId] || [];
+    const safeMessages = messages || {};
+    const userMessages = safeMessages[userId] || [];
     if (userMessages.length === 0) return null;
     
     const lastMessage = userMessages[userMessages.length - 1];
     // Only show status for messages sent by current user
-    if (lastMessage.from === user.id) {
+    if (lastMessage && lastMessage.from === user.id) {
       return lastMessage.read ? '✓✓' : '✓';
     }
     return null;
   };
 
   const getFilteredUsers = () => {
-    if (!searchQuery.trim()) return users;
+    const safeUsers = users || [];
+    if (!searchQuery.trim()) return safeUsers;
     
-    return users.filter(userItem => 
-      userItem.username.toLowerCase().includes(searchQuery.toLowerCase())
+    return safeUsers.filter(userItem => 
+      userItem.username && userItem.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
   };
 
@@ -342,7 +375,7 @@ const Dashboard = () => {
   }, [user.id]);
 
   useEffect(() => {
-    socket.current = io(SOCKET_URL);
+    socket.current = io(backendurl);
     socket.current.emit('add-user', user.id);
     socket.current.on('online-users', (online) => {
       setOnlineUsers(online);
@@ -716,6 +749,7 @@ const Dashboard = () => {
   };
 
   return (
+    <>
     <div style={{ display: 'flex', flexDirection: 'column', height: '94vh', backgroundColor:'rgb(231, 230, 230)', padding:'15px' }}>
 
       {/* header */}
@@ -857,7 +891,7 @@ const Dashboard = () => {
                     display: userItem.profilePicture ? 'none' : 'flex'
                   }}
                 >
-                  {userItem.username.charAt(0).toUpperCase()}
+                  {userItem.username.slice(0, 2).toUpperCase()}
 
                 </div>
 
@@ -999,7 +1033,7 @@ const Dashboard = () => {
                   }}
                 >
                   
-                  {selectedUser.username.charAt(0).toUpperCase()}
+                  {selectedUser.username.slice(0, 2).toUpperCase()}
 
                 </div>
 
@@ -1263,7 +1297,7 @@ const Dashboard = () => {
                               border: '2px solid #ddd'
                             }}
                           >
-                            {user?.username?.charAt(0).toUpperCase() || 'U'}
+                            {user?.username?.slice(0, 2).toUpperCase() || 'U'}
                           </div>
                         )
                       ) : (
@@ -1300,7 +1334,7 @@ const Dashboard = () => {
                               border: '2px solid #ddd'
                             }}
                           >
-                            {selectedUser?.username?.charAt(0).toUpperCase()}
+                            {selectedUser?.username?.slice(0, 2).toUpperCase()}
                           </div>
                         )
                       )}
@@ -1336,8 +1370,6 @@ const Dashboard = () => {
                                   e.stopPropagation();
                                   window.open(msg.fileUrl, '_blank');
                                 }}
-                                onError={(e) => console.error('Image failed to load:', msg.fileUrl, e)}
-                                onLoad={() => console.log('Image loaded successfully:', msg.fileUrl)}
                               />
                             )}
                             {msg.fileType?.startsWith('video/') && (
@@ -1347,10 +1379,13 @@ const Dashboard = () => {
                                 style={{ 
                                   maxWidth: '200px', 
                                   maxHeight: '200px', 
-                                  borderRadius: '4px'
+                                  borderRadius: '4px',
+                                  cursor: 'pointer'
                                 }}
-                                onError={(e) => console.error('Video failed to load:', msg.fileUrl, e)}
-                                onLoad={() => console.log('Video loaded successfully:', msg.fileUrl)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.open(msg.fileUrl, '_blank');
+                                }}
                               />
                             )}
                             {msg.fileType === 'application/pdf' && (
@@ -1369,29 +1404,14 @@ const Dashboard = () => {
                                   window.open(msg.fileUrl, '_blank');
                                 }}
                               >
-                                📄 File
+                                <span role="img" aria-label="PDF">📄</span> {msg.fileName || 'PDF File'}
                               </div>
                             )}
-                            {/* For other file types, show a clickable file icon */}
+                            {/* For other file types, show a generic link */}
                             {!msg.fileType?.startsWith('image/') && !msg.fileType?.startsWith('video/') && msg.fileType !== 'application/pdf' && (
-                              <div 
-                                style={{ 
-                                  padding: '8px', 
-                                  backgroundColor: '#f0f0f0', 
-                                  borderRadius: '4px',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  marginTop: '4px'
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  window.open(msg.fileUrl, '_blank');
-                                }}
-                              >
-                                📎 File
-                              </div>
+                              <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#007AFF', textDecoration: 'underline' }}>
+                                {msg.fileName || 'Download file'}
+                              </a>
                             )}
                           </div>
                         )}
@@ -1569,13 +1589,14 @@ const Dashboard = () => {
                 <input 
                   id="file-upload1" 
                   type="file" 
+                  multiple
                   accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.avi,.mov,.wmv,.pdf"
                   onChange={handleFileSelect}
                   style={{ display: "none" }}
                 />
                 
                 {/* File preview and upload button */}
-                {selectedFile && (
+                {selectedFiles.length > 0 && (
                   <div style={{
                     position: "absolute",
                     bottom: "60px",
@@ -1589,9 +1610,9 @@ const Dashboard = () => {
                     minWidth: "250px"
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                      <span style={{ fontSize: "14px", fontWeight: "bold" }}>📎 {selectedFile.name}</span>
+                      <span style={{ fontSize: "14px", fontWeight: "bold" }}>📎 {selectedFiles.length} files selected</span>
                       <button 
-                        onClick={() => setSelectedFile(null)}
+                        onClick={() => setSelectedFiles([])}
                         style={{ 
                           background: "none", 
                           border: "none", 
@@ -1604,43 +1625,25 @@ const Dashboard = () => {
                       </button>
                     </div>
                     <div style={{ fontSize: "12px", color: "#666", marginBottom: "8px" }}>
-                      Size: {formatFileSize(selectedFile.size)}
+                      Total Size: {selectedFiles.reduce((sum, file) => sum + file.size, 0)}
                     </div>
-                    {selectedFile.type.startsWith('image/') && (
-                      <img 
-                        src={URL.createObjectURL(selectedFile)} 
-                        alt="Preview" 
-                        style={{ 
-                          maxWidth: "100%", 
-                          maxHeight: "150px", 
-                          borderRadius: "4px",
-                          marginBottom: "8px"
-                        }} 
-                      />
-                    )}
-                    {selectedFile.type.startsWith('video/') && (
-                      <video 
-                        src={URL.createObjectURL(selectedFile)} 
-                        controls 
-                        style={{ 
-                          maxWidth: "100%", 
-                          maxHeight: "150px", 
-                          borderRadius: "4px",
-                          marginBottom: "8px"
-                        }}
-                      />
-                    )}
-                    {selectedFile.type === 'application/pdf' && (
-                      <div style={{ 
-                        padding: "20px", 
-                        backgroundColor: "#f5f5f5", 
-                        borderRadius: "4px",
-                        textAlign: "center",
-                        marginBottom: "8px"
-                      }}>
-                        📄 PDF File
+                    {selectedFiles.map((file, index) => (
+                      <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '12px', color: '#666' }}>{file.name}</span>
+                        <button 
+                          onClick={() => setSelectedFiles(selectedFiles.filter((_, i) => i !== index))}
+                          style={{ 
+                            background: "none", 
+                            border: "none", 
+                            cursor: "pointer",
+                            fontSize: "16px",
+                            color: "#666"
+                          }}
+                        >
+                          ✕
+                        </button>
                       </div>
-                    )}
+                    ))}
                     <button 
                       onClick={handleFileUpload}
                       disabled={isUploading}
@@ -1654,7 +1657,7 @@ const Dashboard = () => {
                         cursor: isUploading ? "not-allowed" : "pointer"
                       }}
                     >
-                      {isUploading ? "Uploading..." : "Send File"}
+                      {isUploading ? "Uploading..." : "Send Files"}
                     </button>
                   </div>
                 )}
@@ -1774,6 +1777,32 @@ const Dashboard = () => {
       </div>
 
     </div>
+
+  {popup.show && (
+  <div style={{
+    position: 'fixed',
+    top: 0, left: 0, right: 0, bottom: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 9999, background: 'rgba(0,0,0,0.2)'
+  }}>
+    <div style={{
+      background: 'white',
+      padding: '32px 40px',
+      borderRadius: 12,
+      boxShadow: '0 2px 16px rgba(0,0,0,0.2)',
+      fontSize: 18,
+      color: '#333',
+      textAlign: 'center',
+      minWidth: 300
+    }}>
+      {popup.message}
+      <br/>
+      <button style={{ marginTop: 20, padding: '8px 24px', borderRadius: 6, background: '#007AFF', color: 'white', border: 'none', fontSize: 16, cursor: 'pointer' }} onClick={() => setPopup({ show: false, message: '' })}>OK</button>
+    </div>
+  </div>
+  )}
+  
+  </>
   );
 };
 

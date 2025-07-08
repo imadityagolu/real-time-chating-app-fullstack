@@ -25,7 +25,10 @@ exports.saveMessage = async (req, res) => {
       message,
       timestamp: new Date(),
       read: false,
-      ...(replyTo ? { replyTo } : {})
+      ...(replyTo ? { replyTo } : {}),
+      ...(req.body.fileUrl ? { fileUrl: req.body.fileUrl } : {}),
+      ...(req.body.fileType ? { fileType: req.body.fileType } : {}),
+      ...(req.body.fileName ? { fileName: req.body.fileName } : {}),
     };
     
     conversation.messages.push(newMessage);

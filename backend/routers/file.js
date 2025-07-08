@@ -6,6 +6,7 @@ const fs = require('fs');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const Message = require('../models/Message');
+const crypto = require('crypto');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -36,7 +37,7 @@ const diskStorage = multer.diskStorage({
 const fileFilter = (req, file, cb) => {
   // Check file size (1MB limit)
   if (file.size > 1 * 1024 * 1024) {
-    return cb(new Error('File size must be less than 10MB'), false);
+    return cb(new Error('File size must be less than 1MB'), false);
   }
 
   // Check file type
@@ -272,6 +273,24 @@ router.get('/test-cloudinary', auth, async (req, res) => {
       }
     });
   }
+});
+
+router.get('/cloudinary-signature', auth, (req, res) => {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const folder = 'chat-files';
+  const stringToSign = `folder=${folder}&timestamp=${timestamp}`;
+  const signature = crypto
+    .createHash('sha1')
+    .update(stringToSign + process.env.CLOUDINARY_API_SECRET)
+    .digest('hex');
+
+  res.json({
+    timestamp,
+    signature,
+    folder,
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+  });
 });
 
 // Note: Files are now served statically via /uploads route in main app
