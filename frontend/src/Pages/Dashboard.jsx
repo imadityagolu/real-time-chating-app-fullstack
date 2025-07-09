@@ -19,7 +19,7 @@ import { MdBlockFlipped } from "react-icons/md";
 import EmojiPicker from 'emoji-picker-react';
 import { LuRefreshCcw, LuChevronUp, LuMic, LuSend } from "react-icons/lu";
 
-const SOCKET_URL = import.meta.env.BACKEND_URL || 'http://localhost:8080'; // Use your backend port
+const SOCKET_URL = import.meta.env.BACKEND_URL; // Use your backend port
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
@@ -37,7 +37,7 @@ const Dashboard = () => {
   const messagesEndRef = useRef(null);
   const messageContainerRef = useRef(null);
   
-  const backendurl = import.meta.env.BACKEND_URL || 'http://localhost:8080';
+  const backendurl = import.meta.env.BACKEND_URL;
 
   const [clickDropdown, setClickDropdown] = useState();
   const [clickDropdowntwo, setClickDropdownTwo] = useState();
