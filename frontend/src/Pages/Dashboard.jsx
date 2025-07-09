@@ -37,7 +37,7 @@ const Dashboard = () => {
   const messagesEndRef = useRef(null);
   const messageContainerRef = useRef(null);
   
-  const backendurl = import.meta.env.VITE_BACKEND_URL;
+  const backendurl = "https://real-time-chating-app-fullstack.onrender.com";
 
   const [clickDropdown, setClickDropdown] = useState();
   const [clickDropdowntwo, setClickDropdownTwo] = useState();
@@ -95,7 +95,7 @@ const Dashboard = () => {
       try {
         // Try signed Cloudinary upload
         const token = localStorage.getItem('token');
-        const sigRes = await fetch(`${backendurl}/api/cloudinary-signature`, {
+        const sigRes = await fetch(`https://real-time-chating-app-fullstack.onrender.com/api/cloudinary-signature`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const { timestamp, signature, apiKey, cloudName, folder } = await sigRes.json();
@@ -127,7 +127,7 @@ const Dashboard = () => {
           replyTo: null
         };
         // Save file message to backend for persistence
-        await fetch(`${backendurl}/api/messages`, {
+        await fetch(`https://real-time-chating-app-fullstack.onrender.com/api/messages`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -162,7 +162,7 @@ const Dashboard = () => {
           formData.append('file', file);
           formData.append('from', user.id);
           formData.append('to', selectedUser._id);
-          const uploadUrl = `${backendurl}/api/upload-file`;
+          const uploadUrl = `https://real-time-chating-app-fullstack.onrender.com/api/upload-file`;
           const response = await fetch(uploadUrl, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },
@@ -334,7 +334,7 @@ const Dashboard = () => {
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${backendurl}/api/users`, {
+        const res = await fetch(`https://real-time-chating-app-fullstack.onrender.com/api/users`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -342,7 +342,7 @@ const Dashboard = () => {
         setUsers(data);
         
         // Fetch conversations for the current user
-        const conversationsRes = await fetch(`${backendurl}/api/conversations/${user.id}`, {
+        const conversationsRes = await fetch(`https://real-time-chating-app-fullstack.onrender.com/api/conversations/${user.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const conversationsData = await conversationsRes.json();
@@ -450,7 +450,7 @@ const Dashboard = () => {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(
-          `${backendurl}/api/messages?from=${user.id}&to=${selectedUser._id}`,
+          `https://real-time-chating-app-fullstack.onrender.com/api/messages?from=${user.id}&to=${selectedUser._id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -477,7 +477,7 @@ const Dashboard = () => {
           }))
         }));
         // Mark messages as read
-        await fetch(`${backendurl}/api/messages/read`, {
+        await fetch(`https://real-time-chating-app-fullstack.onrender.com/api/messages/read`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -577,7 +577,7 @@ const Dashboard = () => {
         };
         console.log('Request body:', requestBody);
         
-        const response = await fetch(`${backendurl}/api/messages/delete-selected`, {
+        const response = await fetch(`https://real-time-chating-app-fullstack.onrender.com/api/messages/delete-selected`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -595,7 +595,7 @@ const Dashboard = () => {
         
                 // Refresh messages from server to ensure consistency
         const refreshRes = await fetch(
-          `${backendurl}/api/messages?from=${user.id}&to=${selectedUser._id}`,
+          `https://real-time-chating-app-fullstack.onrender.com/api/messages?from=${user.id}&to=${selectedUser._id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -659,7 +659,7 @@ const Dashboard = () => {
         from: user.id,
         to: selectedUser._id
       };
-      const response = await fetch(`${backendurl}/api/messages/delete-selected`, {
+      const response = await fetch(`https://real-time-chating-app-fullstack.onrender.com/api/messages/delete-selected`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -707,7 +707,7 @@ const Dashboard = () => {
     // Send to backend for persistence
     try {
       const token = localStorage.getItem('token');
-      await fetch(`${backendurl}/api/messages`, {
+      await fetch(`https://real-time-chating-app-fullstack.onrender.com/api/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1142,7 +1142,7 @@ const Dashboard = () => {
                      if (window.confirm('Are you sure you want to clear all messages in this conversation?')) {
                        try {
                          const token = localStorage.getItem('token');
-                         await fetch(`${backendurl}/api/messages/clear`, {
+                         await fetch(`https://real-time-chating-app-fullstack.onrender.com/api/messages/clear`, {
                            method: 'DELETE',
                            headers: {
                              'Content-Type': 'application/json',

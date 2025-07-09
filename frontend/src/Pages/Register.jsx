@@ -40,7 +40,7 @@ const Register = () => {
         formData.append('profilePicture', profilePicture);
       }
 
-      const res = await fetch(`${backendurl}/api/auth/register`, {
+      const res = await fetch(`https://real-time-chating-app-fullstack.onrender.com/api/auth/register`, {
         method: 'POST',
         body: formData, // Don't set Content-Type header, let browser set it with boundary
       });

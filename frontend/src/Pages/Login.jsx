@@ -16,7 +16,7 @@ const Login = () => {
     e.preventDefault();
     setError('');
     try {
-      const res = await fetch(`${backendurl}/api/auth/login`, {
+      const res = await fetch(`https://real-time-chating-app-fullstack.onrender.com/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
