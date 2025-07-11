@@ -299,13 +299,20 @@ const Dashboard = () => {
   };
 
   const getFilteredUsers = () => {
-    const safeUsers = users || [];
-    if (!searchQuery.trim()) return safeUsers;
-    
-    return safeUsers.filter(userItem => 
-      userItem.username && userItem.username.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  };
+  const safeUsers = users || [];
+  if (!searchQuery.trim()) {
+    // No search: only users I have messaged
+    return safeUsers.filter(userItem => {
+      const msgs = messages[userItem._id] || [];
+      return msgs.some(msg => msg.from === user.id);
+    });
+  }
+  // With search: show all users matching the search
+  return safeUsers.filter(userItem =>
+    (userItem.username && userItem.username.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (userItem.email && userItem.email.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+};
 
   // Close emoji picker and dropdowns when clicking outside
   useEffect(() => {
